@@ -1,58 +1,18 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+// Compatible with OpenZeppelin Contracts ^5.0.0
+pragma solidity ^0.8.20;
 
-contract FortuneTokens {
-    address owner = msg.sender;
-    uint public totalSupply;
-    mapping(address => uint) public balanceOf;
-    mapping(address => mapping(address => uint)) public allowance;
-    string public name = "FortuneTokens";
-    string public symbol = "FAT";
-    uint8 public decimals = 18;
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-	event Transfer(address indexed from, address indexed to, uint value);
-    event Approval(address indexed owner, address indexed spender, uint value);
+contract FortuneToken is ERC20, ERC20Burnable, Ownable {
+    constructor(address initialOwner)
+        ERC20("FortuneToken", "FTK")
+        Ownable(initialOwner)
+    {}
 
-
-    function transfer(address recipient, uint amount) external returns (bool) {
-        require(balanceOf[msg.sender] >= amount, "Insufficent Balance");
-        balanceOf[msg.sender] -= amount;
-        balanceOf[recipient] += amount;
-        emit Transfer(msg.sender, recipient, amount);
-        return true;
-    }
-
-    function approve(address spender, uint amount) external returns (bool) {
-        require(balanceOf[msg.sender] >= amount, "Insufficent Balance to approve");
-        allowance[msg.sender][spender] += amount;
-        emit Approval(msg.sender, spender, amount);
-        return true;
-    }
-
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint amount
-    ) external returns (bool) {
-        require(allowance[sender][msg.sender] >= amount, "Insufficent Balance");
-        allowance[sender][msg.sender] -= amount;
-        balanceOf[sender] -= amount;
-        balanceOf[recipient] += amount;
-        emit Transfer(sender, recipient, amount);
-        return true;
-    }
-
-    function mint(uint amount) external  {
-        require(owner == msg.sender, "Only Owner can Mint");
-        balanceOf[msg.sender] += amount;
-        totalSupply += amount;
-        emit Transfer(address(0), msg.sender, amount);
-    }
-
-    function burn(uint amount) external {
-        balanceOf[msg.sender] -= amount;
-        totalSupply -= amount;
-        emit Transfer(msg.sender, address(0), amount);
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
     }
 }
-
